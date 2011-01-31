@@ -1,0 +1,17 @@
+autodetach on
+deflogin off
+hardcopy_append on
+startup_message off
+vbell off
+defscrollback 10000
+silencewait 15
+sorendition kG
+altscreen on #refresh screen after a program like vim or alsamixer exits
+#caption always "%{kG}%?%-Lw%?%{bw}%n*%f %t%?(%u)%?%{kG}%?%+Lw%?"
+caption always "%{wK}%?%-Lw%?%{kw}%n*%f %t%?(%u)%?%{wK}%?%+Lw%?"
+#hardstatus alwayslastline "%{= RY}%H %{BW} %l %{Gb} %D %d.%m.%Y %c%="
+# user specified
+# shell zsh
+bind P paste .
+escape ^Oo
+# EOF
