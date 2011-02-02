@@ -28,7 +28,7 @@ import XMonad.Layout.PerWorkspace
 import XMonad.Layout.Reflect
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.Simplest
-import XMonad.Layout.TabBarDecoration
+--import XMonad.Layout.TabBarDecoration
 import XMonad.ManageHook
 import XMonad.Prompt
 import XMonad.Prompt.Shell
@@ -37,7 +37,7 @@ import XMonad.Util.Dmenu
 import XMonad.Util.Loggers
 import XMonad.Util.NamedWindows
 import XMonad.Util.Run
-import XMonad.Util.Themes
+--import XMonad.Util.Themes
 import XMonad.Util.WorkspaceCompare
 
 import qualified XMonad.StackSet as W
@@ -122,8 +122,8 @@ myLayoutHook = onWorkspace "IM" (named "myIM" imlayout) $
       delta = 3/100
       ratio = 1/2
       magnify = magnifiercz (1.2)
-      myLayoutMods x = maximize $ avoidStruts $ layoutHintsToCenter $ smartBorders $ myTabBar x  
-      myTabBar = tabBar shrinkText myTabTheme Bottom . resizeVerticalBottom 15
+      myLayoutMods x = maximize $ avoidStruts $ layoutHintsToCenter $ smartBorders x -- $ myTabBar x  
+      --myTabBar = tabBar shrinkText myTabTheme Bottom . resizeVerticalBottom 15
 
 
 -- I haven't found out whether to set LG3D in startup or logHook. So I set them both
@@ -166,39 +166,43 @@ myHighlightColor = "#418BD4"
 myFocusedBorderColor = myFgColor
 myNormalBorderColor = myBgColor
 
-myTabTheme = Theme 
-    {   activeColor       = myBgColor
-    ,   inactiveColor     = myBgColor
-    ,   urgentColor       = myFgColor
-    ,   activeBorderColor = myFgColor
-    ,   urgentBorderColor = myFgColor
-    ,   activeTextColor   = myFgColor
-    ,   inactiveTextColor = myFontColor
-    ,   urgentTextColor   = myBgColor
-    ,   fontName          = myFont
---    ,   decoWidth         = 0
-    ,   decoHeight        = 15
-    }
+-- myTabTheme = Theme 
+--     {   activeColor       = myBgColor
+--     ,   inactiveColor     = myBgColor
+--     ,   urgentColor       = myFgColor
+--     ,   activeBorderColor = myFgColor
+--     ,   urgentBorderColor = myFgColor
+--     ,   activeTextColor   = myFgColor
+--     ,   inactiveTextColor = myFontColor
+--     ,   urgentTextColor   = myBgColor
+--     ,   fontName          = myFont
+-- --    ,   decoWidth         = 0
+--     ,   decoHeight        = 15
+--     }
 
 myPanelHeight = "16"
 myPanelY = "0"
 myTerminal = "urxvt"
 
 myMainPanelWidth = "600"
-myConkyPanelWidth = "1080"
+myConkyPanelWidth = "964"
 myTrayerWidth = "110"
 myTrayerMargin = "1680" --mainpanel + conkypanel
 
-myTrayerCmd = "trayer "
-            ++ " --edge top "
-            ++ " --align left "
-            ++ " --margin " ++ myTrayerMargin
-            ++ " --height " ++ myPanelHeight
-            ++ " --widthtype request "
-            ++ " --transparent true "
-            ++ " --alpha 0 "
-            ++ " --tint 0x1A1A1A "
-            ++ " --SetPartialStrut true "
+myTray = "tint2"
+
+myTrayCmd = myTray
+
+--myTrayCmd = myTray 
+--            ++ " --edge top "
+--            ++ " --align left "
+--            ++ " --margin " ++ myTrayerMargin
+--            ++ " --height " ++ myPanelHeight
+--            ++ " --widthtype request "
+--            ++ " --transparent true "
+--            ++ " --alpha 0 "
+--            ++ " --tint 0x1A1A1A "
+--            ++ " --SetPartialStrut true "
 
 myDzenFlags = " -bg " ++ escapeColor myBgColor
             ++ " -fg " ++ escapeColor myFontColor
@@ -264,7 +268,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((myModMask .|. shiftMask, xK_g), spawn ("gimp"))
     , ((myModMask .|. shiftMask, xK_p), spawn ("pidgin"))
     , ((myModMask .|. shiftMask, xK_w), spawn (myTerminal ++ " -e wicd-curses"))
-    , ((myModMask, xK_q), spawn ("killall dzen2 ; killall conky ; killall trayer ; killall xcompmgr ; xmonad --recompile && xmonad --restart"))
+    , ((myModMask, xK_q), spawn ("killall dzen2 ; killall conky ; killall " ++ myTray ++ " ; killall xcompmgr ; xmonad --recompile && xmonad --restart"))
     , ((myModMask, xK_F1), (sendMessage $ JumpToLayout "myTall"))
     , ((myModMask, xK_F2), (sendMessage $ JumpToLayout "myMirrorTall"))
     , ((myModMask, xK_F3), (sendMessage $ JumpToLayout "myMagnifyTall"))
@@ -340,7 +344,7 @@ main = do
      spawn secondBarCmd
      spawn myXcompmgrCmd
      spawn rightScreenBar
-     spawn myTrayerCmd
+     spawn myTrayCmd
      xmonad $ myUrgencyHook
             $ ewmh defaultConfig
         { manageHook = newManageHook

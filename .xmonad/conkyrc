@@ -13,4 +13,5 @@ ${if_mpd_playing}$mpd_smart ($mpd_album) - $mpd_elapsed/$mpd_length |${endif} \
 ^i(/home/corrupt/.xmonad/images/pacman.xpm) ^ca(1,urxvt -e zsh -c "pacman -Qu && zsh")^fg(\#BFBFBF)${execi 30 pacman -Qu | wc -l} Updates^ca() | \
 ^fg(\#418bd8)^i(/home/corrupt/.xmonad/images/cpu.xbm) ^fg(\#BFBFBF)2x${freq_g 1}Ghz (${cpu cpu1}% ${cpu cpu2}%) | \
 ^fg(\#418bd8)^i(/home/corrupt/.xmonad/images/mem.xbm) ^fg(\#BFBFBF)$memperc% | \
-^fg(\#418bd8)${time %A}^fg(\#BFBFBF) ${time %d.%m.%Y} ^fg(\#E0DFDE)^bg(\#418bd8) ${time %H:%M} 
+^fg(\#418bd8)${time %A}^fg(\#BFBFBF) ${time %d.%m.%Y} \
+#^fg(\#E0DFDE)^bg(\#418bd8) ${time %H:%M} 
