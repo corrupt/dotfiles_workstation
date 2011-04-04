@@ -118,15 +118,11 @@ case "$TERM" in
 		}
 		;;
 	*rxvt*|*term*)
-        if [ "$SSH_TTY" ]; then
-			screen -d -R
-		fi  
 		#precmd () {print -Pn "\e]o;${USER}@${HOSTNAME%%.*}:${PWD/$HOME/~}\a"}
 		precmd() { print -Pn "\e]0;%n@%m - %~\a" }
 		preexec () { print -Pn "\e]0;%n@%m - $1\a" }
 		;;
 	*)
-		screen -d -R
 		;;
 esac
 

@@ -2,15 +2,15 @@
 set defsearch=g 
 
 " beim laden einer seite nicht in den insert modus wechseln
-set focuscontent 
+" set focuscontent 
 " bei seiten wie google, kommt man mit 'gi' direkt ins inputfeld
 
-set ignorecase 
+" set ignorecase 
 " case nicht ignorieren, wenn uppercase letter dabei sind
-set smartcase 
+" set smartcase 
 
 " search while typing
-set incsearch 
+" set incsearch 
 
 "link unter cursor in statusline anzeigen
 set showstatuslinks 
@@ -19,5 +19,7 @@ set autocomplete=
 
 set shell=/bin/zsh
 colorscheme corrupt
+
+set go+=n
 
 " vim:ft=vim

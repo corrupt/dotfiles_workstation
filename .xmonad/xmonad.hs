@@ -3,6 +3,7 @@ import XMonad hiding ( (|||) ) -- don't import the ||| operator, it comes in lay
 import XMonad.Actions.GridSelect
 import XMonad.Actions.NoBorders
 import XMonad.Actions.Plane
+import XMonad.Actions.SpawnOn (shellPromptHere, mkSpawner, manageSpawn)
 import XMonad.Core
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
@@ -40,6 +41,8 @@ import XMonad.Util.Run
 --import XMonad.Util.Themes
 import XMonad.Util.WorkspaceCompare
 
+import Graphics.X11.Xlib.Display (displayWidth)
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map as M
 import System.IO
@@ -58,6 +61,7 @@ myManageHook = (composeAll . concat $
     , [className =? c --> doF (W.shift "laut") | c <- myLauts]
     , [className =? c --> doF (W.swapDown) | c <- mySwapDowns]
     , [className =? c --> doFloat | c <- myFloats]
+    , [name      =? c --> doFloat | c <- myFloats]
     , [className =? c --> doIgnore | c <- myIgnores]
     ]) <+> mySpecialHooks
     where
@@ -67,8 +71,8 @@ myManageHook = (composeAll . concat $
        myFms = ["pcmanfm","Krusader","Dolphin"]
        myLauts = ["Amarok"]
        mySwapDowns = ["Skype","Pidgin", "Kopete"]
-       myFloats = ["Truecrypt",".","Download","Akregator","Amarok"]
-       myIgnores = ["Photoshop.exe"]
+       myFloats = ["Truecrypt",".","Download","Downloads","Akregator","Amarok"]
+       myIgnores = ["Photoshop.exe", "VCLSalFrame"]
 
        mySpecialHooks = composeAll
             [ (role =? "gimp-toolbox" <||> role =? "gimp-image-window" <||> role =? "gimp-dock") --> (ask >>= doF . W.sink)
@@ -81,7 +85,7 @@ myManageHook = (composeAll . concat $
        name = stringProperty "WM_NAME"
 
 
-newManageHook = manageDocks <+> myManageHook <+> manageHook defaultConfig
+newManageHook sp = manageSpawn sp <+> manageDocks <+> myManageHook <+> manageHook defaultConfig
 
 
 -- My custom ThinkLight urgency hook. On thinkpads, this will flash the light
@@ -114,7 +118,7 @@ myLayoutHook = onWorkspace "IM" (named "myIM" imlayout) $
       -- imlayout makes pidgin and skype occupy 175px at either side of the screen and puts a regular tiled layout in the middle
       -- using myLayoutMods on the gimp or IM layout does more damage than it helps, so just avoidStruts here
       -- also can't just use "tiled" layout on IM because a single window wouldn't have borders
-      imlayout = avoidStruts $ withIM (0.137) (ClassName "Kopete") $ reflectHoriz $ ((withIM (0.159) (ClassName "Skype") (reflectHoriz tiled )))
+      imlayout = avoidStruts $ withIM (0.137) (ClassName "Pidgin") $ reflectHoriz $ ((withIM (0.159) (ClassName "Skype") (reflectHoriz tiled )))
       gimp = avoidStruts $ withIM (0.15) (Role "gimp-toolbox") $
              --reflectHoriz $ withIM (0.2) (Role "gimp-dock") (mouseResizableTile 3 delta ratio [])
              reflectHoriz $ withIM (0.2) (Role "gimp-dock") (mouseResizableTile)
@@ -147,7 +151,7 @@ escapeColor :: String -> String
 escapeColor = wrap "'" "'"
 
 myModMask = mod4Mask
-myFont = "'-*-terminus-*-r-normal-*-*-100-*-*-*-*-iso8859-*'"
+myFont = "'-*-terminus-*-r-normal-*-10-*-*-*-*-*-uni-*'"
 
 -- myFgColor = "#59bbe8"
 -- myBgColor = "#0d0d0d"
@@ -184,8 +188,8 @@ myPanelHeight = "16"
 myPanelY = "0"
 myTerminal = "urxvt"
 
-myMainPanelWidth = "600"
-myConkyPanelWidth = "964"
+myMainPanelWidth = "560"
+myConkyPanelWidth = "924"
 myTrayerWidth = "110"
 myTrayerMargin = "1680" --mainpanel + conkypanel
 
@@ -211,7 +215,7 @@ myDzenFlags = " -bg " ++ escapeColor myBgColor
             ++ " -fn " ++ myFont
             ++ " -sa c "
             ++ " -y " ++ myPanelY
-            ++ " -xs 0 "
+            ++ " -xs 2 "
 
 statusBarCmd = "dzen2 "
              ++ myDzenFlags
@@ -228,6 +232,9 @@ rightScreenBar = "dzen2 "
                ++ myDzenFlags
                ++ " -w 1680 "
                ++ " -x 1680 "
+
+-- testBar :: Int -> String
+testBar w = "dzen2 -w " ++ show w ++ " -xs3"
    
 myXcompmgrCmd = "xcompmgr"
 
@@ -246,41 +253,42 @@ myPromptConfig = defaultXPConfig
     { position = Top
     , promptBorderWidth = 0
     , font = myFont
-    , height = 16
+    , height = (read myPanelHeight)::Dimension
     , bgColor = myBgColor
-    , fgColor = myFgColor
+    , fgColor = myFontColor
     , bgHLight = myFgColor
     , fgHLight = myBgColor
+    , autoComplete = Nothing
     }
 -- }}}
 
 -- the keys config {{{
-myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
-    [ ((myModMask, xK_p), spawn myDmenuString)
-    , ((myModMask, xK_b), sendMessage ToggleStruts)
-    , ((myModMask, xK_y), sendMessage MirrorShrink) --resizableTall keys
-    , ((myModMask, xK_a), sendMessage MirrorExpand)
-    , ((myModMask .|. shiftMask, xK_l), spawn ("xlock"))
-    , ((myModMask .|. shiftMask, xK_x), spawn ("alock -auth pam"))
-    , ((myModMask .|. shiftMask, xK_e), spawn ("dolphin"))
-    , ((myModMask .|. shiftMask, xK_f), spawn ("firefox"))
-    , ((myModMask .|. shiftMask, xK_a), spawn ("amarok"))
-    , ((myModMask .|. shiftMask, xK_g), spawn ("gimp"))
-    , ((myModMask .|. shiftMask, xK_p), spawn ("pidgin"))
-    , ((myModMask .|. shiftMask, xK_w), spawn (myTerminal ++ " -e wicd-curses"))
-    , ((myModMask, xK_q), spawn ("killall dzen2 ; killall conky ; killall " ++ myTray ++ " ; killall xcompmgr ; xmonad --recompile && xmonad --restart"))
-    , ((myModMask, xK_F1), (sendMessage $ JumpToLayout "myTall"))
-    , ((myModMask, xK_F2), (sendMessage $ JumpToLayout "myMirrorTall"))
-    , ((myModMask, xK_F3), (sendMessage $ JumpToLayout "myMagnifyTall"))
-    , ((myModMask, xK_F4), (sendMessage $ JumpToLayout "myFull"))
-    , ((myModMask, xK_F5), (sendMessage $ JumpToLayout "myCross"))
-    , ((myModMask, xK_F8), (sendMessage $ JumpToLayout "multimedia"))
-    , ((myModMask, xK_F11), spawn "killall xcompmgr")
-    , ((myModMask, xK_F12), spawn ("killall xcompmgr;" ++ myXcompmgrCmd))
-    , ((myModMask, xK_u), withFocused (sendMessage . maximizeRestore))
-    , ((myModMask, xK_g), withFocused toggleBorder)
-    , ((myModMask, xK_o), shellPrompt myPromptConfig)
-    , ((myModMask, xK_Tab), goToSelected defaultGSConfig)
+myKeys conf@(XConfig {XMonad.modMask = modm}) sp = M.fromList $
+    [ ((modm, xK_p), spawn myDmenuString)
+    , ((modm, xK_b), sendMessage ToggleStruts)
+    , ((modm, xK_y), sendMessage MirrorShrink) --resizableTall keys
+    , ((modm, xK_a), sendMessage MirrorExpand)
+    , ((modm .|. shiftMask, xK_l), spawn ("xlock"))
+    , ((modm .|. shiftMask, xK_x), spawn ("alock -auth pam"))
+    , ((modm .|. shiftMask, xK_e), spawn ("dolphin"))
+    , ((modm .|. shiftMask, xK_f), spawn ("firefox"))
+    , ((modm .|. shiftMask, xK_a), spawn ("amarok"))
+    , ((modm .|. shiftMask, xK_g), spawn ("gimp"))
+    , ((modm .|. shiftMask, xK_p), spawn ("pidgin"))
+    , ((modm .|. shiftMask, xK_w), spawn (myTerminal ++ " -e wicd-curses"))
+    , ((modm, xK_q), spawn ("killall dzen2 ; killall conky ; killall " ++ myTray ++ " ; killall xcompmgr ; xmonad --recompile && xmonad --restart"))
+    , ((modm, xK_F1), (sendMessage $ JumpToLayout "myTall"))
+    , ((modm, xK_F2), (sendMessage $ JumpToLayout "myMirrorTall"))
+    , ((modm, xK_F3), (sendMessage $ JumpToLayout "myMagnifyTall"))
+    , ((modm, xK_F4), (sendMessage $ JumpToLayout "myFull"))
+    , ((modm, xK_F5), (sendMessage $ JumpToLayout "myCross"))
+    , ((modm, xK_F8), (sendMessage $ JumpToLayout "multimedia"))
+    , ((modm, xK_F11), spawn "killall xcompmgr")
+    , ((modm, xK_F12), spawn ("killall xcompmgr;" ++ myXcompmgrCmd))
+    , ((modm, xK_u), withFocused (sendMessage . maximizeRestore))
+    , ((modm, xK_g), withFocused toggleBorder)
+    , ((modm, xK_o), shellPromptHere sp myPromptConfig)
+    , ((modm, xK_Tab), goToSelected defaultGSConfig)
     ]
 -- }}}
    
@@ -298,7 +306,7 @@ ppTitleColor = dzenColor myFontColor ""
 ppUrgentColor = dzenColor "#1a1a1a" myFontColor
 
 myPP = dzenPP
-    { ppCurrent = ppCurrentColor . \a -> image "window-active" ++ a ++ "^fg(" ++ myHighlightColor ++ ")" ++ image "vspace"
+    { ppCurrent = ppCurrentColor . \a -> setBgColor ++ image "window-active" ++ a ++ "^fg(" ++ myHighlightColor ++ ")" ++ image "vspace"
     , ppVisible = ppVisibleColor . wrapClickable . (\a -> (a,a))
     , ppHidden = ppHiddenColor . wrapClickable . (\a -> (a,setFgColor ++ image "window" ++ setTextColor ++ a))
     , ppHiddenNoWindows = ppHiddenNWColor . wrapClickable . (\wsId -> (wsId,if (':' `elem` wsId) then drop 2 wsId else wsId))
@@ -341,13 +349,15 @@ myPP = dzenPP
 
 main = do
      din <- spawnPipe statusBarCmd
+     sp  <- mkSpawner
      spawn secondBarCmd
      spawn myXcompmgrCmd
      spawn rightScreenBar
      spawn myTrayCmd
+     spawn "tint2 -c .config/tint2/tabpanel.tint2rc"
      xmonad $ myUrgencyHook
             $ ewmh defaultConfig
-        { manageHook = newManageHook
+        { manageHook = newManageHook sp
         , layoutHook = myLayoutHook
         , startupHook = myStartupHook
         , focusedBorderColor = myFocusedBorderColor
@@ -355,7 +365,7 @@ main = do
         , borderWidth = 2
         , workspaces = myWorkspaces
         , modMask = myModMask
-        , keys = \c -> myKeys c `M.union` keys defaultConfig c
+        , keys = \c -> myKeys c sp `M.union` keys defaultConfig c
         , logHook = myLogHook >> (dynamicLogWithPP $ myPP
                 { ppOutput = hPutStrLn din
                 })

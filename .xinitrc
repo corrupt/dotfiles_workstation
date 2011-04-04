@@ -13,7 +13,7 @@ if [ "$WM" == "xmonad" ]; then
 	klipper &
 	urxvt &
 	#Esetroot /home/corrupt/Wallpapers/xmonadwp.png
-	Esetroot /home/corrupt/bird_1680.png &
+	Esetroot thetismoon2k723x.jpg
 fi
 
 akregator --hide-mainwindow &
