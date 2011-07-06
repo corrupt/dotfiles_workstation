@@ -21,7 +21,8 @@ promptinit; prompt walters
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*' menu select=2
 # case-insensitive (all) completion
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+# zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 # filename suffixes to ignore during completion (except after rm command)
 zstyle ':completion:*:*:(^rm):*:*files' ignored-patterns '*?.(o|c~|old|pro|zwc)'
 # add colors to completions

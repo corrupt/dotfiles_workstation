@@ -9,16 +9,18 @@ fi
 
 if [ "$WM" == "xmonad" ]; then
 	# stuff I only need with xmonad
-	kdeinit4 &
-	klipper &
+	Esetroot /home/corrupt/Downloads/Wood\ Wallpaper\ Dark/Wood\ Wallpaper_1600.jpg
 	urxvt &
-	#Esetroot /home/corrupt/Wallpapers/xmonadwp.png
-	Esetroot thetismoon2k723x.jpg
 fi
 
-akregator --hide-mainwindow &
+xset +fp /usr/share/fonts/local
+xset rehash
+
+liferea &
 /home/corrupt/.bin/tcmount_stuff &
 firefox &
+pidgin &
+skype &
 xmodmap ~/.Xmodmap &
 exec $WM
 

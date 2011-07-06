@@ -13,12 +13,20 @@ set defsearch=g
 " set incsearch 
 
 "link unter cursor in statusline anzeigen
-set showstatuslinks 
+set showstatuslinks=status
 
-set autocomplete=
+"set autocomplete=
 
 set shell=/bin/zsh
 colorscheme corrupt
+
+" defines which commands open in a new tab
+" (all, addons, downloads, extoptions, help, javascript, prefs)
+set newtab=all
+
+" defines when the tabbar is visible
+" (always, multitab, never)
+set showtabline=multitab
 
 set go+=n
 
