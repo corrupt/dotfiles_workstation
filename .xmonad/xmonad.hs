@@ -3,7 +3,7 @@ import XMonad hiding ( (|||) ) -- don't import the ||| operator, it comes in lay
 import XMonad.Actions.GridSelect
 import XMonad.Actions.NoBorders
 import XMonad.Actions.Plane
-import XMonad.Actions.SpawnOn (shellPromptHere, mkSpawner, manageSpawn)
+import XMonad.Actions.SpawnOn (shellPromptHere, manageSpawn)
 import XMonad.Core
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
@@ -65,7 +65,7 @@ myManageHook = (composeAll . concat $
     , [name      =? c --> doFloat | c <- myFloats]
     , [name      =? c --> doFullFloat | c <- myFullFloats]
     , [name      =? c --> doCenterFloat | c <- myCenterFloats]
-    , [className =? c --> doIgnore | c <- myIgnores]
+    , [name      =? c --> doIgnore | c <- myIgnores]
     ]) <+> mySpecialHooks
     where
        myWebs         = ["Firefox", "Iron"]
@@ -74,10 +74,10 @@ myManageHook = (composeAll . concat $
        myFms          = ["pcmanfm", "Krusader", "Dolphin"]
        myLauts        = ["Amarok"]
        mySwapDowns    = ["Skype", "Pidgin", "Kopete"]
-       myFloats       = ["Truecrypt", ".", "Download", "Downloads", "Akregator", "Amarok", "Gmail Manager Login"]
+       myFloats       = ["Photoshop.exe", "Truecrypt", ".", "Download", "Downloads", "Akregator", "Amarok", "Gmail Manager Login"]
        myFullFloats   = ["Liferea"]
        myCenterFloats = ["Copying", "Copying files"]
-       myIgnores      = ["Photoshop.exe", "VCLSalFrame"]
+       myIgnores      = ["VCLSalFrame", "xfce4-notifyd"]
 
        mySpecialHooks = composeAll
             [ (role =? "gimp-toolbox" <||> 
@@ -87,16 +87,17 @@ myManageHook = (composeAll . concat $
             , isFullscreen --> doFullFloat -- fullscreen flash and stuff
             , transience' -- focus parent windows of transient ones
             , name =? "Eclipse" --> doFloat --The Eclipse splash and hopefully not the main window
+--            , className =? "Wine" --> doIgnore 
             ]
         
        role = stringProperty "WM_WINDOW_ROLE"
        name = stringProperty "WM_NAME"
 
 
-newManageHook sp   = manageSpawn sp -- windows spawned by shell promt spawn on their workspace
-                 <+> manageDocks
-                 <+> myManageHook
-                 <+> manageHook defaultConfig
+newManageHook  = manageSpawn
+             <+> manageDock
+             <+> myManageHook
+             <+> manageHook defaultConfig
 
 myLayoutHook = onWorkspace "im"  (named "myIM" imlayout)
              $ onWorkspace "img" (named "myImg" gimp)
@@ -247,14 +248,14 @@ myPromptConfig = defaultXPConfig
 -- }}}
 
 -- the keys config {{{
-myKeys conf@(XConfig {XMonad.modMask = modm}) sp = M.fromList $
+myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm, xK_p), spawn myDmenuString)
     , ((modm, xK_b), sendMessage ToggleStruts)
     -- , ((modm, xK_y), sendMessage MirrorShrink) --resizableTall keys
     -- , ((modm, xK_a), sendMessage MirrorExpand)
     , ((modm, xK_y), sendMessage ShrinkSlave) --mouseResizableTile keys
     , ((modm, xK_a), sendMessage ExpandSlave)
-    , ((modm .|. shiftMask, xK_l), spawn ("xlock"))
+    , ((modm .|. shiftMask, xK_l), spawn ("i3lock -c 000000"))
     , ((modm .|. shiftMask, xK_x), spawn ("alock -auth pam"))
     , ((modm .|. shiftMask, xK_d), spawn ("pcmanfm"))
     , ((modm .|. shiftMask, xK_f), spawn ("firefox"))
@@ -277,7 +278,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) sp = M.fromList $
     , ((modm, xK_F12), spawn ("killall xcompmgr;" ++ myXcompmgrCmd))
     , ((modm, xK_u), withFocused (sendMessage . maximizeRestore))
     , ((modm, xK_g), withFocused toggleBorder)
-    , ((modm, xK_o), shellPromptHere sp myPromptConfig)
+    , ((modm, xK_o), shellPromptHere myPromptConfig)
     , ((modm, xK_m), sendMessage $ Toggle REFLECTX) 
     , ((modm, xK_Tab), goToSelected defaultGSConfig)
     ]
@@ -298,7 +299,7 @@ ppUrgentColor = dzenColor "#1a1a1a" myFontColor
 
 myPP = dzenPP
     { ppCurrent = ppCurrentColor . \a -> setBgColor ++ image "window-active" ++ a ++ "^fg(" ++ myHighlightColor ++ ")" ++ image "vspace"
-    , ppVisible = ppVisibleColor . wrapClickable . (\a -> (a,a))
+    , ppVisible = ppVisibleColor . wrapClickable . (\a -> (a,setBgColor ++ image "vspace" ++ setFgColor ++ a))
     , ppHidden  = ppHiddenColor  . wrapClickable . (\a -> (a,setFgColor ++ image "window" ++ setTextColor ++ a))
     , ppHiddenNoWindows = ppHiddenNWColor . wrapClickable . (\wsId -> (wsId,if (':' `elem` wsId) then drop 2 wsId else wsId))
     , ppUrgent  = ppUrgentColor  . wrapClickable . (\a -> (a,image "window-active" ++ a ++ setTextColor ++ image "vspace")) . dzenStrip 
@@ -340,12 +341,11 @@ myPP = dzenPP
 
 main = do
      din <- spawnPipe statusBarCmd
-     sp  <- mkSpawner
      spawn secondBarCmd
      spawn myXcompmgrCmd
      spawn myTrayCmd
      xmonad $ ewmh defaultConfig
-        { manageHook = newManageHook sp
+        { manageHook = newManageHook
         , layoutHook = myLayoutHook
         , startupHook = myStartupHook
         , focusedBorderColor = myFocusedBorderColor
@@ -353,7 +353,7 @@ main = do
         , borderWidth = 2
         , workspaces = myWorkspaces
         , modMask = myModMask
-        , keys = \c -> myKeys c sp `M.union` keys defaultConfig c
+        , keys = \c -> myKeys c `M.union` keys defaultConfig c
         , logHook = myLogHook >> (dynamicLogWithPP $ myPP
                 { ppOutput = hPutStrLn din
                 })
